@@ -1,0 +1,29 @@
+name: Build & push PrestaShop
+on:
+  push:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: \${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: \${{ env.REGISTRY }}
+          username: \${{ github.actor }}
+          password: \${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5      # Buildx official action :contentReference[oaicite:2]{index=2}
+        with:
+          context: .
+          push: true
+          tags: \${{ env.REGISTRY }}/\${{ env.IMAGE }}:\${{ github.sha }}
+          build-args: |
+            PS_IMAGE=prestashop/prestashop:8.1
